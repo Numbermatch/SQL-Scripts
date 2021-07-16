@@ -1,0 +1,37 @@
+*This is a SAS enterprise program. It may be the case that loops like this exist in other SQL environments, but I am not aware at this time.
+
+*This program works to create a cumulative interest rate from a table of durational interest rates. Mechanically speaking, this program creates an 
+*initial table (from a table called "Interest_Rate") and links that table on itself repetitively. 
+
+*While there are simpler solutions for this problem, I find the concept of linking a table to itself in-loop very powerful. For example, for restructuring data or self-referencing tables. 
+
+%macro sqlLOOP(ourDur,table_Name);
+	PROC SQL;
+		CREATE TABLE WORK.&table_Name. AS 
+		SELECT distinct
+		t1.Duration,
+
+		ifn(&ourDur. = 1, 1, ifn(t1.Duration <= (1 + t2.Duration - &ourDur.),
+		t1.Interest_Rate * ifn(t2.Interest_Rate is null, 1, t2.Interest_Rate),
+		t1.Interest_Rate)) as Interest_Rate
+		
+		%if &ourDur.=1 %then %DO;
+			FROM WORK.Interest_Rates t1	
+			%End;
+		%else %DO;
+			From WORK.&table_Name. t1
+			%End;
+
+		LEFT JOIN WORK.Interest_Rates t2 on
+			t1.Duration = (t2.Duration - &ourDur.)
+		;
+	QUIT;
+
+%if &ourDur.+1 ne 101 %then %do;
+	%sqlLOOP(ourDur=&ourDur.+1,table_Name=&table_Name.);
+%end;
+
+run;
+%mend;
+
+%sqlLOOP(ourDur=1,table_Name=Output_Paul_Test);
