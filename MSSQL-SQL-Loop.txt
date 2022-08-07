@@ -1,0 +1,30 @@
+
+Use [Dataset]
+
+Drop table #droptable_name
+Create table #droptable_name
+
+(fields varchar(100)
+...
+)
+
+Declare @i int = 1
+Declare @SQL NVARCHAR(MAX)
+
+
+Set @prefix = 'SELECT INTO #droptable_name (fields varchar(100)) from / where / group by/ etc '
+
+While @i < 10
+Begin
+
+
+Set @SQL = @prefix + ... + text + cast(@i as nvarchar) + ...)
+EXEC sp_execute @SQL
+
+Set @i = @i + 1
+
+End
+
+Select * from #droptable_name
+
+
